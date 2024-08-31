@@ -2,24 +2,25 @@
 
 #include "utils.hpp"
 #include "wav.hpp"
-#include "Signal.hpp"
-#include "WaveTable.hpp"
+#include "WavetableOscillator.hpp"
+#include "config.hpp"
 
 int main() {
 
-	double A = 0.16;
-	double f = 440.0;
-	int Fs = 48000;
-	double t = 5.0;
-	double Ts = 1.0/ static_cast<double>(Fs);
-	long unsigned N = static_cast<long unsigned>(t / Ts);
+	WavetableOscillator& osc = Saw;
 
-	Signal* signal = new Sine();
-	WaveTable waveTable(signal);
-	double* x = waveTable.generate(A, f, N, Ts);
-	createWavFile("sound.wav", x, Fs, N);
-	delete[] x;
-	delete signal;
+	double freq = 0.0;
+	osc.setFreq(freq);
 
-	return 0;
+	for (int i = 0; i < 10000000000; ++i) {
+		if (i % 10000 == 0) {
+			freq += 100.0;
+			osc.setFreq(freq);
+		}
+		osc.playNextSample();
+	}
+
+    free();
+    return 0;
 }
+

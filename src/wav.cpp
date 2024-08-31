@@ -1,6 +1,6 @@
 #include "wav.hpp"
 
-void createWavFile(const std::string filename, const double* samples, const int sampleRate, const long unsigned N) {
+void createWavFile(const std::string filename, const double* samples_left, const double* samples_right, const long unsigned N, const int sampleRate) {
 	std::ofstream wav;
 	int subchunk2_size = static_cast<int>(N) * NUM_CHANNELS * (SUBCHUNK1_SIZE / 8);
 	int chunk_size = INFO_SIZE + subchunk2_size;
@@ -22,7 +22,8 @@ void createWavFile(const std::string filename, const double* samples, const int 
 		wav << SUBCHUNK2_ID;
 		writeAsBytes(wav, subchunk2_size, 4);
 		for (long unsigned i = 0; i < N; ++i) {
-			writeAsBytes(wav, static_cast<int>(samples[i] * MAX_AMPLITUDE), 2);
+			writeAsBytes(wav, static_cast<int16_t>(samples_left[i] * MAX_AMPLITUDE), 2);
+			writeAsBytes(wav, static_cast<int16_t>(samples_right[i] * MAX_AMPLITUDE), 2);
 		}
 	}
 	wav.close();

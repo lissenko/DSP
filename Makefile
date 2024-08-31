@@ -22,7 +22,7 @@ CXXDEBUGFLAGS := -D __DEBUG__ -g
 
 CPPFLAGS := -I$(IDIR) -MMD
 
-LDLIBS :=
+LDLIBS := 
 
 # Pre-build
 $(shell mkdir -p $(ODIR))
@@ -51,6 +51,9 @@ uninstall:
 
 run: debug
 	./$(BUILD)
+
+sound: debug
+	./$(BUILD) | aplay -r 48000 -f S16_LE -c2
 
 clean:
 	rm -rf $(ODIR)
