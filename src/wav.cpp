@@ -28,3 +28,55 @@ void createWavFile(const std::string filename, const double* samples_left, const
 	}
 	wav.close();
 }
+
+void readWavFile(const std::string &filename, std::vector<double> &samples_left, std::vector<double> &samples_right) {
+    std::ifstream wav(filename, std::ios::binary);
+    if (!wav.is_open()) {
+        std::cerr << "Error opening WAV file: " << filename << std::endl;
+        return;
+    }
+    char chunkID[4], format[4], subchunk1ID[4], subchunk2ID[4];
+    int chunkSize, subchunk1Size, subchunk2Size, byteRate;
+    int16_t audioFormat, numChannels, blockAlign, bitsPerSample;
+	int sampleRate;
+
+    wav.read(chunkID, 4);  // "RIFF"
+    readAsBytes(wav, chunkSize, 4);  // Chunk size
+    wav.read(format, 4);  // "WAVE"
+    wav.read(subchunk1ID, 4);  // "fmt "
+    readAsBytes(wav, subchunk1Size, 4);  // Subchunk1 size
+    readAsBytes(wav, audioFormat, 2);  // Audio format
+    readAsBytes(wav, numChannels, 2);  // Number of channels
+    readAsBytes(wav, sampleRate, 4);  // Sample rate
+    readAsBytes(wav, byteRate, 4);  // Byte rate
+    readAsBytes(wav, blockAlign, 2);  // Block align
+    readAsBytes(wav, bitsPerSample, 2);  // Bits per sample
+    
+    if (std::string(chunkID, 4) != "RIFF" || std::string(format, 4) != "WAVE" || audioFormat != 1 || numChannels != 2 || bitsPerSample != 16) {
+        std::cerr << "Unsupported WAV file format." << std::endl;
+		std::cout << "Chunk ID: " << std::string(chunkID, 4) << std::endl;  // Convert to std::string
+		std::cout << "Format: " << std::string(format, 4) << std::endl;      // Convert to std::string
+		std::cout << "Audio Format: " << audioFormat << std::endl;
+		std::cout << "Bits per Sample: " << bitsPerSample << std::endl;
+        return;
+    }
+    
+    wav.read(subchunk2ID, 4);  // "data"
+    readAsBytes(wav, subchunk2Size, 4);  // Subchunk2 size
+    
+    long unsigned N = subchunk2Size / (numChannels * (bitsPerSample / 8));  // Number of samples per channel
+    samples_left.resize(N);
+    samples_right.resize(N);
+    
+    // Read the audio data
+    for (long unsigned i = 0; i < N; ++i) {
+        int16_t leftSample, rightSample;
+        readAsBytes(wav, leftSample, 2);  // Read left channel sample
+        readAsBytes(wav, rightSample, 2);  // Read right channel sample
+        
+        samples_left[i] = leftSample / static_cast<double>(MAX_AMPLITUDE);  // Normalize left channel sample
+        samples_right[i] = rightSample / static_cast<double>(MAX_AMPLITUDE);  // Normalize right channel sample
+    }
+    
+    wav.close();
+}

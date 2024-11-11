@@ -5,4 +5,5 @@
 
 void writeSamplesToFile(std::string filename, const double*, long unsigned);
 
-long unsigned sec(double t);
+long unsigned seconds(double t);
+

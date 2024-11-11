@@ -3,6 +3,9 @@
 #include <fstream>
 #include <string>
 #include <cstdint>
+#include <iostream>
+
+#include <vector>
 
 #include "config.hpp"
 
@@ -22,5 +25,11 @@ inline void writeAsBytes(std::ostream& file, int value, int byte_size) {
 	file.write(reinterpret_cast<const char*>(&value), byte_size);
 }
 
+template <typename T>
+void readAsBytes(std::ifstream &file, T &value, std::size_t size) {
+    file.read(reinterpret_cast<char *>(&value), size);
+}
 
-void createWavFile(const std::string, const double*, const double*, const long unsigned, const int sampleRate = static_cast<int>(SAMPLE_RATE));
+void createWavFile(const std::string&, const double*, const double*, const long unsigned, const int sampleRate = static_cast<int>(SAMPLE_RATE));
+
+void readWavFile(const std::string& filename, std::vector<double>& samples_left, std::vector<double>& samples_right);

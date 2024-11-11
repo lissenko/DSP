@@ -24,6 +24,9 @@ CPPFLAGS := -I$(IDIR) -MMD
 
 LDLIBS := 
 
+FS := 48000
+TMP_OUTPUT := /tmp/output.wav
+
 # Pre-build
 $(shell mkdir -p $(ODIR))
 
@@ -53,7 +56,12 @@ run: debug
 	./$(BUILD)
 
 sound: debug
-	./$(BUILD) | aplay -r 48000 -f S16_LE -c2
+	./$(BUILD) | aplay -r $(FS) -f S16_LE -c2
+
+sonic: debug
+	./$(BUILD) | sox -t raw -r $(FS) -e signed -b 16 -c 2 - -t wav $(TMP_OUTPUT)
+	sonic-visualiser $(TMP_OUTPUT)
+
 
 clean:
 	rm -rf $(ODIR)

@@ -15,6 +15,6 @@ void writeSamplesToFile(std::string filename, const double* x, long unsigned siz
 	else std::cerr << "Unable to open file";
 }
 
-long unsigned sec(double t) {
+long unsigned seconds(double t) {
 	return static_cast<long unsigned>(t * SAMPLE_RATE);
 }

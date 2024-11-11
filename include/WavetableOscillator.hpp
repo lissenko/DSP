@@ -3,8 +3,10 @@
 #include <iostream>
 
 #include "config.hpp"
+#include "Output.hpp"
 #include "wav.hpp"
 #include "Signal.hpp"
+#include "utils.hpp"
 
 class WavetableOscillator {
 private:
@@ -40,14 +42,28 @@ public:
 	}
 
 	double getNextSample() {
+		/* Weighted average between the sample at the current index and the next index in the wavetable */
 		k += k_inc;
-		
 		if (k >= tableSize) {
 			k -= tableSize;
 		}
+		long unsigned idx1 = static_cast<long unsigned>(k);
+		long unsigned idx2 = (idx1 + 1) % tableSize;
+		// the fractional part of the phase
+		double frac = k - static_cast<double>(idx1);
+		return (1.0 - frac) * wavetable[idx1] + frac * wavetable[idx2];
+	}
 
-		long unsigned idx = static_cast<long unsigned>(k);
-		return wavetable[idx];
+
+	void play(const double freq, const double A, const double t) {
+		long unsigned N = seconds(t);
+		double sample = 0.0;
+		setFreq(freq);
+		for (size_t i = 0; i < N; ++i) {
+			sample = getNextSample() * A;
+			writeAsBytes(std::cout, static_cast<int16_t>(sample * MAX_AMPLITUDE), 2);
+			writeAsBytes(std::cout, static_cast<int16_t>(sample * MAX_AMPLITUDE), 2);
+		}
 	}
 
 	void playNextSample() {
@@ -57,15 +73,17 @@ public:
 	}
 
 
-	void play(const double freq, const double A, const long unsigned N) {
+	Output get(const double freq, const double A) {
+		Output output;
+		double sample = 0.0;
 		setFreq(freq);
-		const double mul = A * MAX_AMPLITUDE;
-		for (size_t i = 0; i < N; ++i) {
-			double sample = getNextSample();
-			writeAsBytes(std::cout, static_cast<int16_t>(sample * mul), 2);
-			writeAsBytes(std::cout, static_cast<int16_t>(sample * mul), 2);
+		for (size_t i = 0; i < GLOBAL_DURATION; ++i) {
+			sample = getNextSample() * A;
+			output[i] = sample;
 		}
+		return output;
 	}
+
 
 	void rest() {
 		writeAsBytes(std::cout, static_cast<int16_t>(0.0), 2);
